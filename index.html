@@ -154,6 +154,8 @@
             color: #2ecc71;
             font-weight: 500;
             font-size: 1.1em;
+            /* Hide by default if permission is not granted */
+            display: none;
         }
 
         .notification-status .fas {
@@ -170,20 +172,9 @@
             color: #c0392b;
         }
 
+        /* Tombol di dalam status notifikasi disembunyikan */
         .notification-status button {
-            background: none;
-            border: none;
-            color: #3f51b5;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.9em;
-            padding: 0;
-            margin-left: 5px;
-            transition: color 0.2s ease;
-        }
-
-        .notification-status button:hover {
-            color: #0056b3;
+            display: none;
         }
 
 
@@ -546,7 +537,7 @@
         </div>
 
         <p class="notification-status" id="notificationStatus">
-            <i class="fas fa-bell"></i> Memeriksa status notifikasi...
+            <i class="fas fa-bell"></i>
         </p>
 
         <div class="buttons">
@@ -786,6 +777,7 @@
                 if (!("Notification" in window)) {
                     notificationStatusElement.textContent = "Browser ini tidak mendukung notifikasi.";
                     notificationStatusElement.classList.add('disabled');
+                    notificationStatusElement.style.display = 'block'; // Pastikan terlihat
                     return false;
                 }
 
@@ -793,30 +785,18 @@
                     notificationPermissionGranted = true;
                     notificationStatusElement.textContent = "Notifikasi otomatis aktif";
                     notificationStatusElement.classList.remove('denied-permission');
-                    const tryEnableBtn = document.getElementById('tryEnableNotifications');
-                    if (tryEnableBtn) tryEnableBtn.remove();
+                    notificationStatusElement.style.display = 'block'; // Pastikan terlihat
                     return true;
                 } else if (Notification.permission === "denied") {
                     notificationPermissionGranted = false;
-                    // Tampilkan pesan dengan tombol untuk mencoba lagi
-                    notificationStatusElement.innerHTML = `
-                        <i class="fas fa-exclamation-triangle"></i> Notifikasi diblokir.
-                        <button id="tryEnableNotifications">Coba Aktifkan Lagi</button>
-                    `;
-                    notificationStatusElement.classList.add('denied-permission');
-                    // Pastikan event listener hanya ditambahkan sekali
-                    if (!document.getElementById('tryEnableNotifications').hasAttribute('data-listener-added')) {
-                         document.getElementById('tryEnableNotifications').addEventListener('click', requestNotificationPermissionOnLoad);
-                         document.getElementById('tryEnableNotifications').setAttribute('data-listener-added', 'true');
-                    }
+                    // Hapus semua teks dan tombol sebelumnya
+                    notificationStatusElement.innerHTML = `<i class="fas fa-bell"></i>`;
+                    notificationStatusElement.style.display = 'none'; // Sembunyikan sepenuhnya jika diblokir
                     return false;
                 } else { // "default"
-                    // Saat default, tidak menampilkan teks status di baris notifikasi
                     notificationPermissionGranted = false;
                     notificationStatusElement.textContent = ""; // Kosongkan teks
-                    notificationStatusElement.classList.remove('denied-permission');
-                    const tryEnableBtn = document.getElementById('tryEnableNotifications');
-                    if (tryEnableBtn) tryEnableBtn.remove();
+                    notificationStatusElement.style.display = 'none'; // Sembunyikan sepenuhnya jika default
                     return false;
                 }
             };
@@ -835,7 +815,7 @@
                         console.error("Gagal meminta izin notifikasi:", error);
                     }
                 }
-                updateNotificationStatusUI();
+                updateNotificationStatusUI(); // Perbarui status UI setelah permintaan atau jika sudah ada izin
             };
 
             const showDrugNotification = (name, time) => {
@@ -976,6 +956,7 @@
                             nextReminderDrugNameElement.textContent = next.name;
                             nextReminderDrugTimeElement.textContent = next.time;
                             nextDrugReminderInfoElement.style.display = 'block';
+                            nextDrugReminderInfoElement.innerHTML = `Obat selanjutnya adalah <strong id="nextReminderDrugName">${next.name}</strong> pada pukul <strong id="nextReminderDrugTime">${next.time}</strong>.`;
                         } else {
                             nextDrugReminderInfoElement.textContent = "Tidak ada jadwal obat berikutnya yang terdaftar.";
                             nextDrugReminderInfoElement.style.display = 'block';
@@ -1022,22 +1003,36 @@
             const findNextDrugAfterCurrent = async (currentTime) => {
                 const schedules = await getAllSchedules(); // Already sorted by time
                 const currentHourMinute = currentTime.split(':').map(Number);
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-                // Filter jadwal yang berada di masa depan dari waktu yang diberikan
-                const futureSchedules = schedules.filter(s => {
+                let nextOnSameDay = null;
+                let nextOnNextDay = null;
+
+                schedules.forEach(s => {
                     const [sHour, sMinute] = s.time.split(':').map(Number);
-                    if (sHour > currentHourMinute[0]) return true;
-                    if (sHour === currentHourMinute[0] && sMinute > currentHourMinute[1]) return true;
-                    return false;
+                    const sTimeInMinutes = sHour * 60 + sMinute;
+                    const currentRefTimeInMinutes = currentHourMinute[0] * 60 + currentHourMinute[1];
+
+                    if (sTimeInMinutes > currentRefTimeInMinutes) {
+                        // Ini adalah jadwal di hari yang sama, setelah waktu yang sekarang
+                        if (!nextOnSameDay || sTimeInMinutes < (nextOnSameDay.time.split(':').map(Number)[0] * 60 + nextOnSameDay.time.split(':').map(Number)[1])) {
+                             nextOnSameDay = s;
+                        }
+                    } else {
+                        // Ini adalah jadwal di hari berikutnya atau sudah lewat hari ini
+                        if (!nextOnNextDay || sTimeInMinutes < (nextOnNextDay.time.split(':').map(Number)[0] * 60 + nextOnNextDay.time.split(':').map(Number)[1])) {
+                            nextOnNextDay = s;
+                        }
+                    }
                 });
 
-                if (futureSchedules.length > 0) {
-                    return futureSchedules[0]; // Jadwal terdekat setelah waktu saat ini (sudah diurutkan)
-                } else if (schedules.length > 0) {
-                    // Jika tidak ada jadwal di sisa hari ini, ambil jadwal pertama di hari berikutnya
-                    return schedules[0];
+                if (nextOnSameDay) {
+                    return nextOnSameDay;
+                } else if (nextOnNextDay) {
+                    return nextOnNextDay;
                 }
-                return null;
+                return null; // Tidak ada jadwal ditemukan
             };
 
 
@@ -1059,7 +1054,7 @@
                 if (event.target == scheduleModal) { closeModal(scheduleModal); }
                 if (event.target == viewAllModal) { closeModal(viewAllModal); }
                 if (event.target == confirmDeleteModal) { closeModal(confirmDeleteModal); }
-                if (event.target == drugReminderModal) { closeModal(drugReminderModal); } // Tutup reminder juga
+                if (event.target == drugReminderModal) { closeModal(drugReminderModal); }
             });
 
             scheduleForm.addEventListener('submit', (event) => {
@@ -1117,11 +1112,6 @@
                 openModal(scheduleModal);
             });
 
-            // Event listener untuk tombol "Oke, Sudah Minum" di pop-up pengingat
-            reminderOkBtn.addEventListener('click', () => {
-                closeModal(drugReminderModal);
-            });
-
 
             // Inisialisasi data awal jika database kosong (hanya untuk demo)
             openDatabase().then(() => {
@@ -1131,8 +1121,8 @@
                         addOrUpdateSchedule({ name: 'Obat Pagi', time: '08:00' });
                         addOrUpdateSchedule({ name: 'Obat Siang', time: '13:00' });
                         addOrUpdateSchedule({ name: 'Obat Malam', time: '20:00' });
-                        addOrUpdateSchedule({ name: 'Vitamin C', time: '16:00' });
-                        addOrUpdateSchedule({ name: 'Suplemen Malam', time: '21:30' });
+                        addOrUpdateSchedule({ name: 'Vitamin C', time: '16:00' }); // Contoh: jam 4 sore
+                        addOrUpdateSchedule({ name: 'Suplemen Malam', time: '21:30' }); // Contoh: jam 9:30 malam
                         setTimeout(updateNextDrugCountdown, 500);
                     }
                 });
