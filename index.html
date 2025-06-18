@@ -162,12 +162,30 @@
             font-size: 1.2em;
         }
 
-        .notification-status.disabled {
-            color: #e74c3c;
+        /* Notifikasi diblokir tidak lagi ditampilkan sebagai teks statis */
+        .notification-status.denied-permission {
+            color: #e74c3c; /* Warna merah untuk status denied */
         }
-        .notification-status.disabled .fas {
+        .notification-status.denied-permission .fas {
             color: #c0392b;
         }
+
+        .notification-status button {
+            background: none;
+            border: none;
+            color: #3f51b5;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 0;
+            margin-left: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .notification-status button:hover {
+            color: #0056b3;
+        }
+
 
         .buttons {
             display: flex;
@@ -270,6 +288,97 @@
             animation: fadeInContent 0.3s ease-out;
         }
 
+        /* New modal style for 'View All' table */
+        #viewAllModal .modal-content {
+            max-width: 90%; /* Lebarkan modal untuk tabel */
+            width: auto;
+            min-width: 300px;
+        }
+
+        /* Delete Confirmation Modal Specific Styling */
+        #confirmDeleteModal .modal-content {
+            max-width: 300px; /* Lebih kecil untuk konfirmasi */
+            text-align: center;
+            padding: 25px;
+        }
+        #confirmDeleteModal .modal-content h2 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+        }
+        #confirmDeleteModal .modal-content p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons button {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 1em;
+            box-shadow: none; /* Hapus bayangan untuk tombol di modal ini */
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons #confirmDeleteBtn {
+            background-color: #e74c3c; /* Merah untuk hapus */
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons #confirmDeleteBtn:hover {
+            background-color: #c0392b;
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons #cancelDeleteBtn {
+            background-color: #95a5a6; /* Abu-abu untuk batal */
+        }
+        #confirmDeleteModal .modal-content .confirm-buttons #cancelDeleteBtn:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Drug Reminder Pop-up Specific Styling */
+        #drugReminderModal {
+            z-index: 2500; /* Lebih tinggi dari modal lain */
+        }
+        #drugReminderModal .modal-content {
+            max-width: 380px;
+            background-color: #e0f2f7; /* Biru muda */
+            border-left: 8px solid #0288d1;
+            padding-bottom: 20px;
+        }
+        #drugReminderModal .modal-content h2 {
+            color: #0288d1;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        #drugReminderModal .modal-content p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            color: #424242;
+        }
+        #drugReminderModal .modal-content p strong {
+            color: #d32f2f; /* Merah untuk penekanan */
+        }
+        #drugReminderModal .modal-content .reminder-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        #drugReminderModal .modal-content .reminder-actions button {
+            width: auto;
+            min-width: 120px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #drugReminderModal .modal-content .reminder-actions #reminderOkBtn {
+            background-color: #4CAF50; /* Hijau */
+        }
+        #drugReminderModal .modal-content .reminder-actions #reminderOkBtn:hover {
+            background-color: #43a047;
+        }
+
+
         @keyframes fadeInContent {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -338,7 +447,36 @@
             background-color: #43a047;
         }
 
-        /* Responsif sederhana */
+        /* Table Styling for View All Modal */
+        #allSchedulesTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #allSchedulesTable th,
+        #allSchedulesTable td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        #allSchedulesTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #allSchedulesTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #allSchedulesTable tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Responsive */
         @media (max-width: 480px) {
             .container {
                 margin: 15px auto;
@@ -375,6 +513,21 @@
             .modal-content {
                 padding: 20px;
             }
+
+            #viewAllModal .modal-content {
+                max-width: 95%; /* Adjust for very small screens */
+                padding: 15px;
+            }
+
+            #allSchedulesTable th,
+            #allSchedulesTable td {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+
+            #confirmDeleteModal .modal-content .confirm-buttons {
+                flex-direction: column; /* Tombol vertikal di layar kecil */
+            }
         }
     </style>
 </head>
@@ -406,7 +559,7 @@
 
     <div id="scheduleModal" class="modal">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <span class="close-button" data-modal="scheduleModal">&times;</span>
             <h2 id="modalTitle">Tambah Jadwal Obat</h2>
             <form id="scheduleForm">
                 <input type="hidden" id="scheduleId">
@@ -421,6 +574,52 @@
         </div>
     </div>
 
+    <div id="viewAllModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal="viewAllModal">&times;</span>
+            <h2><i class="fas fa-list-ul"></i> Daftar Semua Jadwal Obat</h2>
+            <div id="allSchedulesContainer">
+                <table id="allSchedulesTable">
+                    <thead>
+                        <tr>
+                            <th>Nama Obat</th>
+                            <th>Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <p id="emptyTableMessage" style="display: none; text-align: center; margin-top: 20px; color: #777;">Belum ada jadwal obat yang tersimpan.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Hapus Jadwal?</h2>
+            <p>Anda yakin ingin menghapus jadwal <strong id="deleteDrugName"></strong> pada pukul <strong id="deleteDrugTime"></strong>?</p>
+            <div class="confirm-buttons">
+                <button id="confirmDeleteBtn">Hapus</button>
+                <button id="cancelDeleteBtn">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="drugReminderModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-bell-concierge"></i> Waktunya Minum Obat!</h2>
+            <p>Sudah pukul <strong id="reminderDrugTime"></strong>. Jangan lupa minum **<span id="reminderDrugName"></span>**.</p>
+            <p id="nextDrugReminderInfo">Obat selanjutnya adalah <strong id="nextReminderDrugName"></strong> pada pukul <strong id="nextReminderDrugTime"></strong>.</p>
+            <p style="font-size: 0.9em; font-style: italic; color: #666;">
+                **Pentingnya minum obat tepat waktu:** Memastikan efektivitas obat, menjaga kadar obat dalam tubuh stabil, dan mencegah resistensi. Disiplin adalah kunci kesehatan Anda.
+            </p>
+            <div class="reminder-actions">
+                <button id="reminderOkBtn">Oke, Sudah Minum</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // JavaScript dengan IndexedDB untuk CRUD dan Notifikasi
         document.addEventListener('DOMContentLoaded', () => {
@@ -432,13 +631,13 @@
             let currentEditId = null;
             let notificationPermissionGranted = false;
             let countdownInterval;
+            let deleteItemId = null; // Menyimpan ID item yang akan dihapus sementara
 
             // Elemen DOM
             const scheduleList = document.getElementById('scheduleList');
             const noScheduleMessage = document.getElementById('noScheduleMessage');
             const addScheduleFab = document.getElementById('addScheduleFab');
             const scheduleModal = document.getElementById('scheduleModal');
-            const closeButton = document.querySelector('.close-button');
             const modalTitle = document.getElementById('modalTitle');
             const scheduleForm = document.getElementById('scheduleForm');
             const scheduleIdInput = document.getElementById('scheduleId');
@@ -450,6 +649,28 @@
             const notificationStatusElement = document.getElementById('notificationStatus');
             const nextDrugNameElement = document.getElementById('nextDrugName');
             const countdownDisplayElement = document.getElementById('countdownDisplay');
+
+            // View All Modal elements
+            const viewAllModal = document.getElementById('viewAllModal');
+            const allSchedulesTableBody = document.querySelector('#allSchedulesTable tbody');
+            const emptyTableMessage = document.getElementById('emptyTableMessage');
+
+            // Delete Confirmation Modal elements
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            const deleteDrugNameElement = document.getElementById('deleteDrugName');
+            const deleteDrugTimeElement = document.getElementById('deleteDrugTime');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+            // Drug Reminder Pop-up elements
+            const drugReminderModal = document.getElementById('drugReminderModal');
+            const reminderDrugTimeElement = document.getElementById('reminderDrugTime');
+            const reminderDrugNameElement = document.getElementById('reminderDrugName');
+            const nextDrugReminderInfoElement = document.getElementById('nextDrugReminderInfo');
+            const nextReminderDrugNameElement = document.getElementById('nextReminderDrugName');
+            const nextReminderDrugTimeElement = document.getElementById('nextReminderDrugTime');
+            const reminderOkBtn = document.getElementById('reminderOkBtn');
+
 
             // --- IndexedDB Functions ---
             const openDatabase = () => {
@@ -493,7 +714,7 @@
                     console.log('Schedule saved to IndexedDB:', scheduleData);
                     displaySchedules();
                     updateNextDrugCountdown();
-                    closeModal();
+                    closeModal(scheduleModal);
                 };
 
                 request.onerror = (event) => {
@@ -502,11 +723,9 @@
                 };
             };
 
-            const deleteSchedule = async (id) => {
+            // Fungsi delete sekarang dipanggil setelah konfirmasi modal kustom
+            const performDeleteSchedule = async (id) => {
                 if (!db) await openDatabase();
-                if (!confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
-                    return;
-                }
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const objectStore = transaction.objectStore(STORE_NAME);
                 const request = objectStore.delete(id);
@@ -515,11 +734,13 @@
                     console.log('Schedule deleted from IndexedDB:', id);
                     displaySchedules();
                     updateNextDrugCountdown();
+                    closeModal(confirmDeleteModal); // Tutup modal konfirmasi setelah hapus
                 };
 
                 request.onerror = (event) => {
                     console.error('Error deleting schedule:', event.target.error);
                     alert('Gagal menghapus jadwal: ' + event.target.error.message);
+                    closeModal(confirmDeleteModal); // Tetap tutup modal jika ada error
                 };
             };
 
@@ -571,39 +792,50 @@
                 if (Notification.permission === "granted") {
                     notificationPermissionGranted = true;
                     notificationStatusElement.textContent = "Notifikasi otomatis aktif";
-                    notificationStatusElement.classList.remove('disabled');
+                    notificationStatusElement.classList.remove('denied-permission');
+                    const tryEnableBtn = document.getElementById('tryEnableNotifications');
+                    if (tryEnableBtn) tryEnableBtn.remove();
                     return true;
                 } else if (Notification.permission === "denied") {
                     notificationPermissionGranted = false;
-                    notificationStatusElement.textContent = "Notifikasi diblokir. Izinkan di pengaturan browser.";
-                    notificationStatusElement.classList.add('disabled');
+                    // Tampilkan pesan dengan tombol untuk mencoba lagi
+                    notificationStatusElement.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i> Notifikasi diblokir.
+                        <button id="tryEnableNotifications">Coba Aktifkan Lagi</button>
+                    `;
+                    notificationStatusElement.classList.add('denied-permission');
+                    // Pastikan event listener hanya ditambahkan sekali
+                    if (!document.getElementById('tryEnableNotifications').hasAttribute('data-listener-added')) {
+                         document.getElementById('tryEnableNotifications').addEventListener('click', requestNotificationPermissionOnLoad);
+                         document.getElementById('tryEnableNotifications').setAttribute('data-listener-added', 'true');
+                    }
                     return false;
                 } else { // "default"
+                    // Saat default, tidak menampilkan teks status di baris notifikasi
                     notificationPermissionGranted = false;
-                    notificationStatusElement.textContent = "Aktifkan notifikasi untuk pengingat";
-                    notificationStatusElement.classList.remove('disabled');
+                    notificationStatusElement.textContent = ""; // Kosongkan teks
+                    notificationStatusElement.classList.remove('denied-permission');
+                    const tryEnableBtn = document.getElementById('tryEnableNotifications');
+                    if (tryEnableBtn) tryEnableBtn.remove();
                     return false;
                 }
             };
 
             const requestNotificationPermissionOnLoad = async () => {
-                // Hanya minta izin jika statusnya "default" (belum pernah diminta/ditolak)
-                if ("Notification" in window && Notification.permission === "default") {
-                    console.log("Meminta izin notifikasi secara otomatis...");
+                if ("Notification" in window && (Notification.permission === "default" || Notification.permission === "denied")) {
+                    console.log("Meminta/Meminta ulang izin notifikasi...");
                     try {
                         const permission = await Notification.requestPermission();
                         if (permission === "granted") {
                             console.log("Izin notifikasi diberikan.");
-                            // Tidak perlu alert, karena ini otomatis dan mungkin mengganggu
                         } else {
                             console.warn("Izin notifikasi ditolak.");
-                            // Tidak perlu alert, karena ini otomatis dan mungkin mengganggu
                         }
                     } catch (error) {
                         console.error("Gagal meminta izin notifikasi:", error);
                     }
                 }
-                updateNotificationStatusUI(); // Perbarui status UI setelah permintaan atau jika sudah ada izin
+                updateNotificationStatusUI();
             };
 
             const showDrugNotification = (name, time) => {
@@ -659,6 +891,9 @@
                             countdownDisplayElement.innerHTML = '<span>Sekarang!</span>';
                             nextDrugNameElement.textContent = `Waktunya minum ${nextDrug.name}!`;
 
+                            // Panggil pop-up pengingat kustom
+                            showDrugReminderPopup(nextDrug);
+                            // Panggil notifikasi sistem browser
                             showDrugNotification(nextDrug.name, nextDrug.time);
 
                             // Setelah notifikasi, langsung perbarui ke jadwal berikutnya
@@ -707,45 +942,126 @@
                 }
             };
 
-            const openModal = (schedule = null) => {
-                scheduleModal.style.display = 'flex';
-                scheduleForm.reset();
+            const openModal = (modalElement, data = null) => {
+                modalElement.style.display = 'flex';
+                // Reset form hanya jika modal adalah scheduleModal (tambah/edit)
+                if (modalElement === scheduleModal) {
+                    scheduleForm.reset();
+                    if (data) {
+                        modalTitle.textContent = 'Edit Jadwal Obat';
+                        scheduleIdInput.value = data.id;
+                        drugNameInput.value = data.name;
+                        drugTimeInput.value = data.time;
+                        currentEditId = data.id; // Pastikan currentEditId diatur
+                    } else {
+                        modalTitle.textContent = 'Tambah Jadwal Obat';
+                        scheduleIdInput.value = '';
+                        currentEditId = null;
+                    }
+                } else if (modalElement === viewAllModal) {
+                    displayAllSchedulesInTable();
+                } else if (modalElement === confirmDeleteModal) {
+                    // Isi detail obat yang akan dihapus
+                    deleteDrugNameElement.textContent = data.name;
+                    deleteDrugTimeElement.textContent = data.time;
+                    deleteItemId = data.id; // Simpan ID untuk fungsi hapus nanti
+                } else if (modalElement === drugReminderModal) {
+                    // Isi detail pengingat obat
+                    reminderDrugTimeElement.textContent = data.time;
+                    reminderDrugNameElement.textContent = data.name;
 
-                if (schedule) {
-                    modalTitle.textContent = 'Edit Jadwal Obat';
-                    scheduleIdInput.value = schedule.id;
-                    drugNameInput.value = schedule.name;
-                    drugTimeInput.value = schedule.time;
-                    currentEditId = schedule.id;
-                } else {
-                    modalTitle.textContent = 'Tambah Jadwal Obat';
-                    scheduleIdInput.value = '';
-                    currentEditId = null;
+                    // Cari obat selanjutnya untuk ditampilkan di pop-up
+                    findNextDrugAfterCurrent(data.time).then(next => {
+                        if (next) {
+                            nextReminderDrugNameElement.textContent = next.name;
+                            nextReminderDrugTimeElement.textContent = next.time;
+                            nextDrugReminderInfoElement.style.display = 'block';
+                        } else {
+                            nextDrugReminderInfoElement.textContent = "Tidak ada jadwal obat berikutnya yang terdaftar.";
+                            nextDrugReminderInfoElement.style.display = 'block';
+                        }
+                    });
                 }
             };
 
-            const closeModal = () => {
-                scheduleModal.style.display = 'none';
-                currentEditId = null;
+            const closeModal = (modalElement) => {
+                modalElement.style.display = 'none';
+                if (modalElement === scheduleModal) {
+                    currentEditId = null; // Reset currentEditId saat modal ditutup
+                } else if (modalElement === confirmDeleteModal) {
+                    deleteItemId = null; // Reset ID item yang akan dihapus
+                }
             };
+
+            const displayAllSchedulesInTable = async () => {
+                const schedules = await getAllSchedules();
+                allSchedulesTableBody.innerHTML = ''; // Clear existing rows
+
+                if (schedules.length === 0) {
+                    emptyTableMessage.style.display = 'block';
+                    allSchedulesTableBody.style.display = 'none'; // Hide table body if empty
+                } else {
+                    emptyTableMessage.style.display = 'none';
+                    allSchedulesTableBody.style.display = 'table-row-group'; // Show table body
+                    schedules.forEach(schedule => {
+                        const row = allSchedulesTableBody.insertRow();
+                        const cellName = row.insertCell(0);
+                        const cellTime = row.insertCell(1);
+                        cellName.textContent = schedule.name;
+                        cellTime.textContent = schedule.time;
+                    });
+                }
+            };
+
+            // Fungsi untuk menampilkan pop-up pengingat obat
+            const showDrugReminderPopup = (currentDrug) => {
+                openModal(drugReminderModal, currentDrug);
+            };
+
+            // Fungsi untuk mencari obat berikutnya setelah obat yang saat ini dijadwalkan
+            const findNextDrugAfterCurrent = async (currentTime) => {
+                const schedules = await getAllSchedules(); // Already sorted by time
+                const currentHourMinute = currentTime.split(':').map(Number);
+
+                // Filter jadwal yang berada di masa depan dari waktu yang diberikan
+                const futureSchedules = schedules.filter(s => {
+                    const [sHour, sMinute] = s.time.split(':').map(Number);
+                    if (sHour > currentHourMinute[0]) return true;
+                    if (sHour === currentHourMinute[0] && sMinute > currentHourMinute[1]) return true;
+                    return false;
+                });
+
+                if (futureSchedules.length > 0) {
+                    return futureSchedules[0]; // Jadwal terdekat setelah waktu saat ini (sudah diurutkan)
+                } else if (schedules.length > 0) {
+                    // Jika tidak ada jadwal di sisa hari ini, ambil jadwal pertama di hari berikutnya
+                    return schedules[0];
+                }
+                return null;
+            };
+
 
             // --- Event Listeners and Initial Load ---
-            // Panggil fungsi untuk meminta izin notifikasi dan update UI saat DOM siap
             requestNotificationPermissionOnLoad();
-            openDatabase(); // Buka database
+            openDatabase();
 
-            // FAB untuk menambah jadwal
-            addScheduleFab.addEventListener('click', () => openModal());
+            addScheduleFab.addEventListener('click', () => openModal(scheduleModal));
 
-            // Tombol close modal
-            closeButton.addEventListener('click', closeModal);
+            document.querySelectorAll('.close-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const modalToClose = event.target.closest('.modal');
+                    if (modalToClose) {
+                        closeModal(modalToClose);
+                    }
+                });
+            });
             window.addEventListener('click', (event) => {
-                if (event.target == scheduleModal) {
-                    closeModal();
-                }
+                if (event.target == scheduleModal) { closeModal(scheduleModal); }
+                if (event.target == viewAllModal) { closeModal(viewAllModal); }
+                if (event.target == confirmDeleteModal) { closeModal(confirmDeleteModal); }
+                if (event.target == drugReminderModal) { closeModal(drugReminderModal); } // Tutup reminder juga
             });
 
-            // Submit form (tambah/edit)
             scheduleForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 const name = drugNameInput.value.trim();
@@ -753,8 +1069,8 @@
 
                 if (name && time) {
                     const scheduleData = { name, time };
-                    if (currentEditId) {
-                        scheduleData.id = currentEditId;
+                    if (scheduleIdInput.value) {
+                        scheduleData.id = parseInt(scheduleIdInput.value);
                     }
                     addOrUpdateSchedule(scheduleData);
                 } else {
@@ -762,7 +1078,6 @@
                 }
             });
 
-            // Delegasi event untuk tombol edit dan delete
             scheduleList.addEventListener('click', async (event) => {
                 const target = event.target;
                 const scheduleItem = target.closest('.schedule-item');
@@ -774,31 +1089,39 @@
                 if (target.classList.contains('fa-edit') || target.classList.contains('edit-btn')) {
                     const scheduleToEdit = await getScheduleById(id);
                     if (scheduleToEdit) {
-                        openModal(scheduleToEdit);
+                        openModal(scheduleModal, scheduleToEdit);
                     }
                 } else if (target.classList.contains('fa-trash-alt') || target.classList.contains('delete-btn')) {
-                    deleteSchedule(id);
+                    const scheduleToDelete = await getScheduleById(id);
+                    if (scheduleToDelete) {
+                        openModal(confirmDeleteModal, scheduleToDelete);
+                    }
                 }
             });
 
-            // Tombol "Lihat Semua Obat"
-            viewAllBtn.addEventListener('click', async () => {
-                const schedules = await getAllSchedules();
-                if (schedules.length === 0) {
-                    alert('Belum ada jadwal obat yang tersimpan.');
-                    return;
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (deleteItemId !== null) {
+                    performDeleteSchedule(deleteItemId);
                 }
-                let message = "Daftar Jadwal Obat Anda:\n\n";
-                schedules.forEach(s => {
-                    message += `- ${s.name} pada ${s.time}\n`;
-                });
-                alert(message);
             });
 
-            // Tombol "Atur Jadwal"
+            cancelDeleteBtn.addEventListener('click', () => {
+                closeModal(confirmDeleteModal);
+            });
+
+            viewAllBtn.addEventListener('click', () => {
+                openModal(viewAllModal);
+            });
+
             setScheduleBtn.addEventListener('click', () => {
-                openModal();
+                openModal(scheduleModal);
             });
+
+            // Event listener untuk tombol "Oke, Sudah Minum" di pop-up pengingat
+            reminderOkBtn.addEventListener('click', () => {
+                closeModal(drugReminderModal);
+            });
+
 
             // Inisialisasi data awal jika database kosong (hanya untuk demo)
             openDatabase().then(() => {
@@ -808,6 +1131,8 @@
                         addOrUpdateSchedule({ name: 'Obat Pagi', time: '08:00' });
                         addOrUpdateSchedule({ name: 'Obat Siang', time: '13:00' });
                         addOrUpdateSchedule({ name: 'Obat Malam', time: '20:00' });
+                        addOrUpdateSchedule({ name: 'Vitamin C', time: '16:00' });
+                        addOrUpdateSchedule({ name: 'Suplemen Malam', time: '21:30' });
                         setTimeout(updateNextDrugCountdown, 500);
                     }
                 });
