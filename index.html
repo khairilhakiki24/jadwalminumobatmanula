@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Minum Obat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS3 Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Mengatur ke atas agar tidak terlalu ke bawah saat konten bertambah */
+            min-height: 100vh;
+            padding: 20px 0; /* Memberi padding atas bawah */
+            margin: 0;
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            margin: 20px auto; /* Margin auto untuk centering horizontal */
+            position: relative;
+        }
+
+        h1 {
+            color: #3f51b5;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+            font-weight: 500;
+        }
+
+        h1 .fas {
+            color: #ff5722;
+            margin-right: 12px;
+        }
+
+        #nextDrugSchedule {
+            background-color: #bbdefb; /* Light blue for next schedule */
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #2196F3;
+        }
+
+        #nextDrugSchedule h2 {
+            margin-top: 0;
+            color: #1976D2;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        #nextDrugSchedule p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        #nextDrugSchedule p span {
+            font-weight: bold;
+            color: #D32F2F; /* Merah untuk hitung mundur */
+        }
+
+        #scheduleList {
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e8f5e9;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            font-size: 1.15em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4CAF50;
+            position: relative;
+        }
+
+        .schedule-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .schedule-item .time {
+            font-weight: bold;
+            color: #1976D2;
+            display: flex;
+            align-items: center;
+            white-space: nowrap; /* Mencegah waktu pindah baris */
+        }
+
+        .schedule-item .time .far {
+            margin-right: 10px;
+            color: #2196F3;
+            font-size: 1.2em;
+        }
+
+        .schedule-item .label {
+            color: #424242;
+            font-weight: 400;
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 15px;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 10px;
+            white-space: nowrap; /* Mencegah tombol pindah baris */
+        }
+
+        .schedule-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #757575;
+            transition: color 0.2s ease;
+            padding: 5px;
+        }
+
+        .schedule-actions button:hover {
+            color: #3f51b5;
+        }
+
+        .schedule-actions button.delete-btn {
+            color: #e74c3c;
+        }
+        .schedule-actions button.delete-btn:hover {
+            color: #c0392b;
+        }
+
+
+        .notification-status {
+            margin-top: 30px;
+            margin-bottom: 35px;
+            font-style: italic;
+            color: #2ecc71; /* Warna hijau untuk status notifikasi */
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        .notification-status .fas {
+            margin-right: 10px;
+            color: #27ae60;
+            font-size: 1.2em;
+        }
+
+        .notification-status.disabled {
+            color: #e74c3c;
+        }
+        .notification-status.disabled .fas {
+            color: #c0392b;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button .fas {
+            margin-right: 10px;
+        }
+
+        /* Floating Action Button (FAB) */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            background-color: #43a047;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .fab:active {
+            transform: scale(1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            animation: fadeInOverlay 0.3s ease-out;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 350px;
+            text-align: left;
+            position: relative;
+            animation: fadeInContent 0.3s ease-out;
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #3f51b5;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .modal-content input[type="text"],
+        .modal-content input[type="time"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .modal-content input[type="text"]:focus,
+        .modal-content input[type="time"]:focus {
+            border-color: #3f51b5;
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+            outline: none;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            font-size: 1.1em;
+            border-radius: 8px;
+        }
+
+        .modal-content button:hover {
+            background-color: #43a047;
+        }
+
+        /* Responsif sederhana */
+        @media (max-width: 480px) {
+            .container {
+                margin: 15px auto;
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .schedule-item {
+                font-size: 1em;
+                padding: 12px 15px;
+            }
+
+            .notification-status {
+                font-size: 1em;
+            }
+
+            .buttons button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+
+            .fab {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8em;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-pills"></i> Jadwal Minum Obat</h1>
+
+        <div id="nextDrugSchedule">
+            <h2><i class="fas fa-hourglass-half"></i> Minum Obat Selanjutnya</h2>
+            <p id="nextDrugName">Tidak ada jadwal terdekat.</p>
+            <p id="countdownDisplay"><span>--:--:--</span></p>
+        </div>
+
+        <div id="scheduleList">
+            <p id="noScheduleMessage" style="display: none; color: #777; font-style: italic;">Belum ada jadwal obat. Tambahkan satu!</p>
+        </div>
+
+        <p class="notification-status" id="notificationStatus">
+            <i class="fas fa-bell"></i> Notifikasi otomatis aktif
+        </p>
+
+        <div class="buttons">
+            <button id="requestNotificationPermissionBtn"><i class="fas fa-bell"></i> Aktifkan Notifikasi</button>
+            <button id="viewAllBtn"><i class="fas fa-list-ul"></i> Lihat Semua Obat</button>
+            <button id="setScheduleBtn"><i class="fas fa-cogs"></i> Atur Jadwal</button>
+        </div>
+    </div>
+
+    <button class="fab" id="addScheduleFab"><i class="fas fa-plus"></i></button>
+
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modalTitle">Tambah Jadwal Obat</h2>
+            <form id="scheduleForm">
+                <input type="hidden" id="scheduleId">
+                <label for="drugName">Nama Obat:</label>
+                <input type="text" id="drugName" placeholder="Contoh: Paracetamol" required>
+
+                <label for="drugTime">Waktu Minum:</label>
+                <input type="time" id="drugTime" required>
+
+                <button type="submit" id="saveScheduleBtn">Simpan Jadwal</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript dengan IndexedDB untuk CRUD dan Notifikasi
+        document.addEventListener('DOMContentLoaded', () => {
+            const DB_NAME = 'DrugScheduleDB';
+            const DB_VERSION = 1;
+            const STORE_NAME = 'schedules';
+
+            let db;
+            let currentEditId = null;
+            let notificationPermissionGranted = false;
+            let countdownInterval;
+
+            // Elemen DOM
+            const scheduleList = document.getElementById('scheduleList');
+            const noScheduleMessage = document.getElementById('noScheduleMessage');
+            const addScheduleFab = document.getElementById('addScheduleFab');
+            const scheduleModal = document.getElementById('scheduleModal');
+            const closeButton = document.querySelector('.close-button');
+            const modalTitle = document.getElementById('modalTitle');
+            const scheduleForm = document.getElementById('scheduleForm');
+            const scheduleIdInput = document.getElementById('scheduleId');
+            const drugNameInput = document.getElementById('drugName');
+            const drugTimeInput = document.getElementById('drugTime');
+            const saveScheduleBtn = document.getElementById('saveScheduleBtn');
+            const viewAllBtn = document.getElementById('viewAllBtn');
+            const setScheduleBtn = document.getElementById('setScheduleBtn');
+            const requestNotificationPermissionBtn = document.getElementById('requestNotificationPermissionBtn');
+            const notificationStatusElement = document.getElementById('notificationStatus');
+            const nextDrugNameElement = document.getElementById('nextDrugName');
+            const countdownDisplayElement = document.getElementById('countdownDisplay');
+
+            // --- IndexedDB Functions ---
+            const openDatabase = () => {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                    request.onerror = (event) => {
+                        console.error('IndexedDB error:', event.target.errorCode);
+                        alert('Gagal membuka database: ' + event.target.errorCode);
+                        reject('Error opening database');
+                    };
+
+                    request.onsuccess = (event) => {
+                        db = event.target.result;
+                        console.log('IndexedDB opened successfully');
+                        resolve(db);
+                        displaySchedules(); // Tampilkan jadwal setelah DB terbuka
+                        updateNextDrugCountdown(); // Mulai hitung mundur
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                            objectStore.createIndex('name', 'name', { unique: false });
+                            objectStore.createIndex('time', 'time', { unique: false });
+                        }
+                        console.log('IndexedDB upgrade complete');
+                    };
+                });
+            };
+
+            const addOrUpdateSchedule = async (scheduleData) => {
+                if (!db) await openDatabase();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+
+                const request = scheduleData.id ? objectStore.put(scheduleData) : objectStore.add(scheduleData);
+
+                request.onsuccess = () => {
+                    console.log('Schedule saved to IndexedDB:', scheduleData);
+                    displaySchedules();
+                    updateNextDrugCountdown(); // Perbarui hitung mundur setelah data berubah
+                    closeModal();
+                };
+
+                request.onerror = (event) => {
+                    console.error('Error saving schedule:', event.target.error);
+                    alert('Gagal menyimpan jadwal: ' + event.target.error.message);
+                };
+            };
+
+            const deleteSchedule = async (id) => {
+                if (!db) await openDatabase();
+                if (!confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
+                    return;
+                }
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.delete(id);
+
+                request.onsuccess = () => {
+                    console.log('Schedule deleted from IndexedDB:', id);
+                    displaySchedules();
+                    updateNextDrugCountdown(); // Perbarui hitung mundur
+                };
+
+                request.onerror = (event) => {
+                    console.error('Error deleting schedule:', event.target.error);
+                    alert('Gagal menghapus jadwal: ' + event.target.error.message);
+                };
+            };
+
+            const getScheduleById = (id) => {
+                return new Promise(async (resolve, reject) => {
+                    if (!db) await openDatabase();
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const request = objectStore.get(id);
+
+                    request.onsuccess = (event) => {
+                        resolve(event.target.result);
+                    };
+
+                    request.onerror = (event) => {
+                        console.error('Error getting schedule by ID:', event.target.error);
+                        reject('Error getting schedule by ID');
+                    };
+                });
+            };
+
+            const getAllSchedules = () => {
+                return new Promise(async (resolve, reject) => {
+                    if (!db) await openDatabase();
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const request = objectStore.getAll();
+
+                    request.onsuccess = (event) => {
+                        const schedules = event.target.result.sort((a, b) => a.time.localeCompare(b.time));
+                        resolve(schedules);
+                    };
+
+                    request.onerror = (event) => {
+                        console.error('Error getting all schedules:', event.target.error);
+                        reject('Error getting all schedules');
+                    };
+                });
+            };
+
+            // --- Notification Functions ---
+            const checkNotificationPermission = () => {
+                if (!("Notification" in window)) {
+                    console.warn("Browser ini tidak mendukung notifikasi desktop.");
+                    notificationStatusElement.textContent = "Browser tidak mendukung notifikasi";
+                    notificationStatusElement.classList.add('disabled');
+                    requestNotificationPermissionBtn.style.display = 'none';
+                    return false;
+                }
+
+                if (Notification.permission === "granted") {
+                    console.log("Izin notifikasi sudah diberikan.");
+                    notificationPermissionGranted = true;
+                    notificationStatusElement.textContent = "Notifikasi otomatis aktif";
+                    notificationStatusElement.classList.remove('disabled');
+                    requestNotificationPermissionBtn.style.display = 'none';
+                    return true;
+                } else if (Notification.permission === "denied") {
+                    console.warn("Izin notifikasi ditolak.");
+                    notificationPermissionGranted = false;
+                    notificationStatusElement.textContent = "Notifikasi diblokir. Izinkan di pengaturan browser.";
+                    notificationStatusElement.classList.add('disabled');
+                    requestNotificationPermissionBtn.style.display = 'block';
+                    return false;
+                } else { // "default"
+                    console.log("Izin notifikasi belum diminta.");
+                    notificationPermissionGranted = false;
+                    notificationStatusElement.textContent = "Aktifkan notifikasi untuk pengingat";
+                    notificationStatusElement.classList.remove('disabled');
+                    requestNotificationPermissionBtn.style.display = 'block';
+                    return false;
+                }
+            };
+
+            const requestNotificationPermission = async () => {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Izin notifikasi diberikan oleh pengguna.");
+                    notificationPermissionGranted = true;
+                    checkNotificationPermission(); // Perbarui status UI
+                    alert("Notifikasi telah diaktifkan! Anda akan menerima pengingat jadwal obat.");
+                } else {
+                    console.warn("Izin notifikasi ditolak oleh pengguna.");
+                    notificationPermissionGranted = false;
+                    checkNotificationPermission(); // Perbarui status UI
+                    alert("Izin notifikasi ditolak. Anda tidak akan menerima pengingat.");
+                }
+            };
+
+            const showDrugNotification = (name, time) => {
+                if (notificationPermissionGranted) {
+                    new Notification(`Waktunya Minum Obat!`, {
+                        body: `Jangan lupa minum ${name} sekarang. Waktu: ${time}`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/3774/3774136.png' // Icon obat
+                    });
+                }
+            };
+
+            // --- Countdown and Next Drug Logic ---
+            const updateNextDrugCountdown = async () => {
+                const schedules = await getAllSchedules();
+                let nextDrug = null;
+                let minDiff = Infinity; // Selisih waktu terdekat dalam milidetik
+
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                schedules.forEach(schedule => {
+                    const [hour, minute] = schedule.time.split(':').map(Number);
+                    let drugDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, 0);
+
+                    // Jika jadwal sudah lewat hari ini, cek untuk besok
+                    if (drugDate.getTime() <= now.getTime()) {
+                        drugDate.setDate(drugDate.getDate() + 1);
+                    }
+
+                    const diff = drugDate.getTime() - now.getTime();
+
+                    if (diff < minDiff && diff > 0) { // Hanya ambil jadwal di masa depan
+                        minDiff = diff;
+                        nextDrug = {
+                            id: schedule.id,
+                            name: schedule.name,
+                            time: schedule.time,
+                            timestamp: drugDate.getTime()
+                        };
+                    }
+                });
+
+                clearInterval(countdownInterval); // Hentikan interval sebelumnya
+
+                if (nextDrug) {
+                    nextDrugNameElement.textContent = `${nextDrug.name} pada ${nextDrug.time}`;
+                    countdownInterval = setInterval(() => {
+                        const remainingTime = nextDrug.timestamp - new Date().getTime();
+
+                        if (remainingTime <= 0) {
+                            clearInterval(countdownInterval);
+                            countdownDisplayElement.innerHTML = '<span>Sekarang!</span>';
+                            nextDrugNameElement.textContent = `Waktunya minum ${nextDrug.name}!`;
+
+                            // Tampilkan notifikasi
+                            showDrugNotification(nextDrug.name, nextDrug.time);
+
+                            // Setelah notifikasi, langsung perbarui ke jadwal berikutnya
+                            setTimeout(() => {
+                                updateNextDrugCountdown();
+                            }, 1000); // Tunggu sebentar sebelum mencari jadwal berikutnya
+                            return;
+                        }
+
+                        const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                        countdownDisplayElement.innerHTML = `<span>${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}</span>`;
+                    }, 1000);
+                } else {
+                    nextDrugNameElement.textContent = "Tidak ada jadwal terdekat.";
+                    countdownDisplayElement.innerHTML = "<span>--:--:--</span>";
+                }
+            };
+
+            // --- UI & Modal Functions ---
+            const displaySchedules = async () => {
+                const schedules = await getAllSchedules();
+                scheduleList.innerHTML = '';
+
+                if (schedules.length === 0) {
+                    noScheduleMessage.style.display = 'block';
+                } else {
+                    noScheduleMessage.style.display = 'none';
+                    schedules.forEach(schedule => {
+                        const scheduleItem = document.createElement('div');
+                        scheduleItem.className = 'schedule-item';
+                        scheduleItem.setAttribute('data-id', schedule.id);
+
+                        scheduleItem.innerHTML = `
+                            <span class="time"><i class="far fa-clock"></i> ${schedule.time}</span>
+                            <span class="label">${schedule.name}</span>
+                            <div class="schedule-actions">
+                                <button class="edit-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        `;
+                        scheduleList.appendChild(scheduleItem);
+                    });
+                }
+            };
+
+            const openModal = (schedule = null) => {
+                scheduleModal.style.display = 'flex';
+                scheduleForm.reset();
+
+                if (schedule) {
+                    modalTitle.textContent = 'Edit Jadwal Obat';
+                    scheduleIdInput.value = schedule.id;
+                    drugNameInput.value = schedule.name;
+                    drugTimeInput.value = schedule.time;
+                    currentEditId = schedule.id;
+                } else {
+                    modalTitle.textContent = 'Tambah Jadwal Obat';
+                    scheduleIdInput.value = '';
+                    currentEditId = null;
+                }
+            };
+
+            const closeModal = () => {
+                scheduleModal.style.display = 'none';
+                currentEditId = null;
+            };
+
+            // --- Event Listeners ---
+            openDatabase();
+            checkNotificationPermission(); // Cek status izin notifikasi saat startup
+
+            // FAB untuk menambah jadwal
+            addScheduleFab.addEventListener('click', () => openModal());
+
+            // Tombol close modal
+            closeButton.addEventListener('click', closeModal);
+            window.addEventListener('click', (event) => {
+                if (event.target == scheduleModal) {
+                    closeModal();
+                }
+            });
+
+            // Submit form (tambah/edit)
+            scheduleForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const name = drugNameInput.value.trim();
+                const time = drugTimeInput.value.trim();
+
+                if (name && time) {
+                    const scheduleData = { name, time };
+                    if (currentEditId) {
+                        scheduleData.id = currentEditId;
+                    }
+                    addOrUpdateSchedule(scheduleData);
+                } else {
+                    alert('Nama obat dan waktu tidak boleh kosong!');
+                }
+            });
+
+            // Delegasi event untuk tombol edit dan delete
+            scheduleList.addEventListener('click', async (event) => {
+                const target = event.target;
+                const scheduleItem = target.closest('.schedule-item');
+
+                if (!scheduleItem) return;
+
+                const id = parseInt(scheduleItem.getAttribute('data-id'));
+
+                if (target.classList.contains('fa-edit') || target.classList.contains('edit-btn')) {
+                    const scheduleToEdit = await getScheduleById(id);
+                    if (scheduleToEdit) {
+                        openModal(scheduleToEdit);
+                    }
+                } else if (target.classList.contains('fa-trash-alt') || target.classList.contains('delete-btn')) {
+                    deleteSchedule(id);
+                }
+            });
+
+            // Tombol "Request Notification Permission"
+            requestNotificationPermissionBtn.addEventListener('click', requestNotificationPermission);
+
+            // Tombol "Lihat Semua Obat"
+            viewAllBtn.addEventListener('click', async () => {
+                const schedules = await getAllSchedules();
+                if (schedules.length === 0) {
+                    alert('Belum ada jadwal obat yang tersimpan.');
+                    return;
+                }
+                let message = "Daftar Jadwal Obat Anda:\n\n";
+                schedules.forEach(s => {
+                    message += `- ${s.name} pada ${s.time}\n`;
+                });
+                alert(message);
+            });
+
+            // Tombol "Atur Jadwal"
+            setScheduleBtn.addEventListener('click', () => {
+                openModal();
+            });
+
+            // Inisialisasi data awal jika database kosong (hanya untuk demo)
+            openDatabase().then(() => {
+                getAllSchedules().then(schedules => {
+                    if (schedules.length === 0) {
+                        console.log('Adding initial data to IndexedDB...');
+                        addOrUpdateSchedule({ name: 'Obat Pagi', time: '08:00' });
+                        addOrUpdateSchedule({ name: 'Obat Siang', time: '13:00' });
+                        addOrUpdateSchedule({ name: 'Obat Malam', time: '20:00' });
+                        // Tambahkan jeda untuk memastikan IndexedDB selesai sebelum updateNextDrugCountdown
+                        setTimeout(updateNextDrugCountdown, 500);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
